@@ -16,12 +16,45 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any
 
+from pydantic import BaseModel, Field
+
 from grounded_memory.pipelines.inference import GroundedMemorySystem
+
+
+class ObserveRequest(BaseModel):
+    timestamp: datetime | None = None
+    image_path: str = Field(default="", description="Local/uploaded image reference.")
+
+
+class ObserveResponse(BaseModel):
+    event_id: str
+    description: str
+    entities: list[str]
+    latency_s: float
+
+
+class QueryRequest(BaseModel):
+    question: str
+    reference: datetime | None = None
+    temporal_constraint: str = "recency"
+    query_entities: list[str] = Field(default_factory=list)
+
+
+class Evidence(BaseModel):
+    event_id: str
+    timestamp: str
+    score: float
+
+
+class QueryResponse(BaseModel):
+    answer: str
+    evidence: list[Evidence] = Field(default_factory=list)
+    abstained: bool = False
+    confidence: float | None = None  # model-reported, NOT calibrated
 
 
 def create_app(system: GroundedMemorySystem | None = None):
     from fastapi import FastAPI
-    from pydantic import BaseModel, Field
 
     app = FastAPI(
         title="Grounded Multimodal Scene Memory",
@@ -29,33 +62,6 @@ def create_app(system: GroundedMemorySystem | None = None):
         description="Observe visual events into memory and answer grounded temporal queries.",
     )
     app.state.system = system or GroundedMemorySystem()
-
-    class ObserveRequest(BaseModel):
-        timestamp: datetime | None = None
-        image_path: str = Field(default="", description="Local/uploaded image reference.")
-
-    class ObserveResponse(BaseModel):
-        event_id: str
-        description: str
-        entities: list[str]
-        latency_s: float
-
-    class QueryRequest(BaseModel):
-        question: str
-        reference: datetime | None = None
-        temporal_constraint: str = "recency"
-        query_entities: list[str] = Field(default_factory=list)
-
-    class Evidence(BaseModel):
-        event_id: str
-        timestamp: str
-        score: float
-
-    class QueryResponse(BaseModel):
-        answer: str
-        evidence: list[Evidence] = Field(default_factory=list)
-        abstained: bool = False
-        confidence: float | None = None  # model-reported, NOT calibrated
 
     @app.get("/health")
     def health() -> dict[str, Any]:

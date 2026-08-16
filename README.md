@@ -81,11 +81,11 @@ Nothing above claims experiments were run. Placeholders are clearly labeled.
 ```bash
 python -m venv .venv && source .venv/bin/activate      # Python 3.11 or 3.12
 pip install -e ".[dev]"          # light: schemas, metrics, retrieval logic, tests
-# pip install -e ".[all]"        # full local research env (adds torch/faiss/fastapi/viz)
+# pip install -e ".[all]"        # full local research env (adds torch/fastapi/viz)
 cp .env.example .env             # then edit paths / tokens
 ```
 
-Optional extras: `models` (torch+transformers), `retrieval` (faiss-cpu),
+Optional extras: `models` (torch+transformers),
 `api` (fastapi+uvicorn), `viz` (matplotlib), `quant` (bitsandbytes), `notebooks`.
 
 ## Dataset setup

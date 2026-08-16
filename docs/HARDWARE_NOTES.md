@@ -14,9 +14,9 @@ Short answer: **yes for almost everything — with one real exception
 a Mac Studio (Apple Silicon):
 
 **Runs natively, no issues:** the entire non-model stack — scene schema, all
-evaluation metrics, memory/retrieval (FAISS `faiss-cpu` has Apple Silicon
-wheels), the FastAPI service, tracking, notebooks, tests, and the whole offline
-`MockVLM` pipeline. Experiments 1 and 2's *logic* all run fine on CPU.
+evaluation metrics, memory/retrieval (pure NumPy, no native retrieval library
+to worry about), the FastAPI service, tracking, notebooks, tests, and the whole
+offline `MockVLM` pipeline. Experiments 1 and 2's *logic* all run fine on CPU.
 
 **VLM inference (Qwen2.5-VL, LLaVA-NeXT) — works, but read this.** Via Hugging
 Face Transformers on the MPS backend it will run, but expect some ops to fall
@@ -81,8 +81,7 @@ for capstone/research). Step zero is lining up a faculty sponsor.
    scratch**, not home — home quotas are usually tight; `rsync -avP` the ~20 GB
    dataset up once.
 2. **Environment.** `module load python3`, create a conda env in your home dir,
-   then `pip install -e ".[all]"`. No root needed; `faiss-cpu` and torch+CUDA
-   install fine.
+   then `pip install -e ".[all]"`. No root needed; torch+CUDA installs fine.
 3. **Interactive smoke test** on a GPU before batching:
    `srun -p gpu --gres=gpu:1 --pty bash`, then
    `python scripts/run_scene_experiment.py --images-dir <scratch>/gqa/images --limit 5`.

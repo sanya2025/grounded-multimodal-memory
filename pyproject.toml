@@ -16,7 +16,7 @@ keywords = [
 ]
 
 # Base install is intentionally light. Heavy / hardware-specific packages
-# (torch, transformers, faiss, bitsandbytes) live in optional extras so that
+# (torch, transformers, bitsandbytes) live in optional extras so that
 # tests and metric code can run without GPUs or large downloads.
 dependencies = [
     "numpy>=1.24",
@@ -33,9 +33,6 @@ models = [
     "torch>=2.2",
     "transformers>=4.49",
     "accelerate>=0.30",
-]
-retrieval = [
-    "faiss-cpu>=1.8",
 ]
 api = [
     "fastapi>=0.110",
@@ -63,11 +60,11 @@ dev = [
 ]
 # Convenience meta-extra for a full local research environment.
 all = [
-    "grounded-multimodal-memory[models,retrieval,api,viz,tracking,notebooks,dev]",
+    "grounded-multimodal-memory[models,api,viz,tracking,notebooks,dev]",
 ]
 
 [project.urls]
-Homepage = "https://github.com/your-username/grounded-multimodal-memory"
+Homepage = "https://github.com/sanya2025/grounded-multimodal-memory"
 
 [tool.setuptools.packages.find]
 where = ["src"]

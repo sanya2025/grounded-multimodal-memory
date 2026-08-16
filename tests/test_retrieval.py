@@ -96,10 +96,7 @@ def test_ndcg_at_k_perfect_and_imperfect():
     assert ndcg_at_k(["c", "b", "a"], gains, k=3) < 1.0
 
 
-def test_numpy_fallback_matches_when_no_faiss(toy_store, embedder):
-    # Force the NumPy path by clearing any faiss index.
-    toy_store._faiss_index = None
-    toy_store._dirty = True
+def test_semantic_search_exact_cosine_ranking(toy_store, embedder):
     q = embedder.embed_text("mug on the counter")
     pairs = toy_store.semantic_search(q, top_k=1)
     assert pairs and pairs[0][0].event_id == "event_0001"

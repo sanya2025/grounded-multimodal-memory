@@ -50,13 +50,6 @@ Synthetic scenes with ground-truth locations, attributes, relationships, questio
 
 ---
 
-## Retrieval
-- FAISS GitHub: https://github.com/facebookresearch/faiss
-- FAISS docs: https://faiss.ai/
-- FAISS paper: https://arxiv.org/abs/2401.08281
-
----
-
 ## License note
 Code in this repository is MIT-licensed. Datasets and model weights are governed
 by their own licenses — review and comply with each before use.

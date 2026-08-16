@@ -18,9 +18,6 @@ Pillow>=10.0
 # transformers>=4.49
 # accelerate>=0.30
 
-# ---- optional: retrieval ----
-# faiss-cpu>=1.8
-
 # ---- optional: API ----
 # fastapi>=0.110
 # uvicorn>=0.29

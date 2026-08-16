@@ -1,9 +1,9 @@
-"""In-memory episodic store with optional FAISS acceleration.
+"""In-memory episodic store.
 
 Holds ``MemoryEvent`` objects, maintains an embedding matrix for semantic search,
-and persists to / loads from JSONL + .npy. If ``faiss`` is installed the semantic
-search uses a flat index; otherwise it falls back to exact NumPy cosine search.
-Both paths return identical rankings for normalized vectors.
+and persists to / loads from JSONL + .npy. Semantic search is exact NumPy cosine
+similarity — fine at this store's scale; swap in an ANN index if it ever needs to
+handle large event counts.
 """
 
 from __future__ import annotations
@@ -22,7 +22,6 @@ class MemoryStore:
         self._events: list[MemoryEvent] = []
         self._dim = dim
         self._matrix: np.ndarray | None = None
-        self._faiss_index = None
         self._dirty = True
 
     # ---- population ----
@@ -51,20 +50,11 @@ class MemoryStore:
         embedded = [e for e in self._events if e.embedding is not None]
         if not embedded:
             self._matrix = None
-            self._faiss_index = None
             self._dirty = False
             return
         mat = np.vstack([l2_normalize(e.embedding) for e in embedded]).astype(np.float32)
         self._matrix = mat
         self._embedded_events = embedded
-        try:
-            import faiss  # type: ignore
-
-            index = faiss.IndexFlatIP(mat.shape[1])  # inner product == cosine for L2-normed
-            index.add(mat)
-            self._faiss_index = index
-        except Exception:  # noqa: BLE001 - FAISS optional; NumPy fallback is fine
-            self._faiss_index = None
         self._dirty = False
 
     def semantic_search(
@@ -77,14 +67,9 @@ class MemoryStore:
             return []
         q = l2_normalize(np.asarray(query_embedding, dtype=np.float32)).reshape(1, -1)
         k = min(top_k, self._matrix.shape[0])
-        if self._faiss_index is not None:
-            scores, idxs = self._faiss_index.search(q, k)
-            pairs = [(self._embedded_events[i], float(s)) for i, s in zip(idxs[0], scores[0])]
-        else:
-            sims = (self._matrix @ q.T).ravel()
-            order = np.argsort(-sims)[:k]
-            pairs = [(self._embedded_events[i], float(sims[i])) for i in order]
-        return pairs
+        sims = (self._matrix @ q.T).ravel()
+        order = np.argsort(-sims)[:k]
+        return [(self._embedded_events[i], float(sims[i])) for i in order]
 
     # ---- persistence ----
     def save(self, jsonl_path: str | Path, embeddings_path: str | Path | None = None) -> None:

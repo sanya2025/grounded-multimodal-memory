@@ -93,7 +93,7 @@ conda create -y -n gmm python=3.11
 conda activate gmm
 
 # Install the project. On a GPU node you can install the full stack:
-pip install -e ".[all]"        # torch(+CUDA), transformers, faiss, fastapi, viz, dev, ...
+pip install -e ".[all]"        # torch(+CUDA), transformers, fastapi, viz, dev, ...
 
 cp .env.example .env           # then edit: GQA_ROOT, HF_TOKEN (if gated), GMM_DEVICE=cuda
 ```
