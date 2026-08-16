@@ -1,0 +1,26 @@
+{
+  "sequence_id": "toy_seq_01",
+  "description": "Tiny illustrative sequence for tests/examples. NOT experimental data.",
+  "events": [
+    {"event_id": "event_0001", "timestamp": "2026-08-14T08:30:00", "image_path": "toy/frame_00.jpg",
+     "description": "A red coffee mug is on the kitchen counter.", "entities": ["mug", "counter"]},
+    {"event_id": "event_0002", "timestamp": "2026-08-14T09:15:00", "image_path": "toy/frame_01.jpg",
+     "description": "A laptop and keys are on the office desk.", "entities": ["laptop", "keys", "desk"]},
+    {"event_id": "event_0003", "timestamp": "2026-08-14T10:30:00", "image_path": "toy/frame_02.jpg",
+     "description": "The keys are placed inside a black backpack.", "entities": ["keys", "backpack"]},
+    {"event_id": "event_0004", "timestamp": "2026-08-14T11:45:00", "image_path": "toy/frame_03.jpg",
+     "description": "The black backpack is placed in the car.", "entities": ["backpack", "car"]}
+  ],
+  "questions": [
+    {"question_id": "q1", "question": "Where were the keys at 09:15?", "answer": "on the office desk",
+     "relevant_event_ids": ["event_0002"], "question_type": "direct_retrieval", "requires_abstention": false},
+    {"question_id": "q2", "question": "Where were the keys last seen?", "answer": "inside the black backpack",
+     "relevant_event_ids": ["event_0003"], "question_type": "latest_state", "requires_abstention": false},
+    {"question_id": "q3", "question": "Which object moved from the office desk to the car?", "answer": "the keys / backpack",
+     "relevant_event_ids": ["event_0002", "event_0003", "event_0004"], "question_type": "cross_event", "requires_abstention": false},
+    {"question_id": "q4", "question": "Did the backpack enter the car before or after the keys were placed in it?", "answer": "after",
+     "relevant_event_ids": ["event_0003", "event_0004"], "question_type": "temporal_order", "requires_abstention": false},
+    {"question_id": "q5", "question": "What brand was the backpack?", "answer": "cannot be determined",
+     "relevant_event_ids": [], "question_type": "abstention", "requires_abstention": true}
+  ]
+}

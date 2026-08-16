@@ -1,0 +1,65 @@
+# Evaluation configuration: normalization vocabularies, abstention detection,
+# and statistical-reporting settings.
+
+# Relation synonym normalization. Map surface forms -> canonical relation.
+relation_normalization:
+  holding: [holding, holds, "is holding", carrying, grasping]
+  wearing: [wearing, wears, "dressed in", "has on"]
+  sitting_on: [sitting on, "seated on", "sits on"]
+  standing_on: [standing on, "stands on"]
+  riding: [riding, rides, "riding on"]
+  using: [using, uses, operating]
+  eating: [eating, eats]
+  looking_at: [looking at, watching, "gazing at"]
+  next_to: [next to, beside, "adjacent to", "alongside"]
+  on: [on, "on top of", "resting on", atop]
+
+# Canonical spatial relations and their opposites (for counterfactual probes).
+spatial_relations:
+  canonical: [left_of, right_of, above, below, in_front_of, behind, inside, near, on, under]
+  opposites:
+    left_of: right_of
+    right_of: left_of
+    above: below
+    below: above
+    in_front_of: behind
+    behind: in_front_of
+    on: under
+    under: on
+
+# Object-label normalization (singular/plural + common synonyms).
+object_normalization:
+  lowercase: true
+  strip_plurals: true
+  synonyms:
+    person: [man, woman, boy, girl, child, guy, lady, people]
+    couch: [sofa]
+    tv: [television, "tv set"]
+    bike: [bicycle]
+
+# Abstention / "insufficient evidence" detection.
+abstention:
+  # A response counts as an abstention if it matches any phrase (case-insensitive).
+  phrases:
+    - "cannot be determined"
+    - "cannot determine"
+    - "insufficient"
+    - "insufficient visual evidence"
+    - "not enough evidence"
+    - "cannot tell"
+    - "unable to determine"
+    - "no visual evidence"
+    - "not visible"
+    - "cannot be confirmed"
+    - "impossible to say"
+
+# Evidence-verifiability tri-state. Scene graphs are NOT omniscient: an
+# unannotated claim is "not_verifiable", not automatically a hallucination.
+evidence_labels: [supported, contradicted, not_verifiable]
+
+# Statistical reporting.
+statistics:
+  bootstrap_samples: 10000
+  ci: 0.95
+  paired: true
+  seed: 20260815

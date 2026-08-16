@@ -1,0 +1,55 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# ---- Environment / secrets ----
+.env
+*.key
+*.token
+
+# ---- Large data: never commit raw datasets or model weights ----
+data/raw/**
+data/processed/**
+!data/**/.gitkeep
+*.jpg
+*.jpeg
+*.png
+*.h5
+*.pt
+*.bin
+*.safetensors
+models_cache/
+hf_cache/
+
+# ---- FAISS indexes / embeddings ----
+*.faiss
+*.index
+*.npy
+*.npz
+
+# ---- Results: keep frozen tables/reports; ignore bulky raw dumps ----
+results/predictions/**
+!results/predictions/.gitkeep
+results/figures/**
+!results/figures/.gitkeep
+
+# NOTE: The frozen 120-image manifest (data/manifests/*.csv) SHOULD be committed.
+!data/manifests/*.csv
+
+# ---- OS / editor ----
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+.vscode/settings.json

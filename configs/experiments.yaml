@@ -1,0 +1,52 @@
+# Experiment matrix. Experiment numbering is FIXED (see EXPERIMENTS.md):
+#   E1 Grounded Scene Understanding | E2 Multimodal Memory | E3 Efficiency.
+# Metrics, failure analysis, human eval, and stats are supporting methods, NOT
+# separate experiments.
+
+generation:
+  temperature: 0.0
+  max_new_tokens: 512
+  seed: 20260815
+
+# ---------------- Experiment 1 ----------------
+e1_grounded_scene_understanding:
+  models: [qwen2_5_vl_7b, llava_next_7b]
+  manifest: data/manifests/gqa_benchmark_v1.csv
+  prompt_conditions: [standard, grounded, structured]   # A / B / C
+  # 120 images x 2 models x 3 conditions = 720 primary inference runs.
+  results_dir: results/predictions
+  e1_4_clevr:
+    enabled: true
+    n_examples: 30
+
+# ---------------- Experiment 2 ----------------
+e2_multimodal_memory:
+  models: [qwen2_5_vl_7b]
+  sequences_dir: data/sequences
+  methods: [no_memory, full_history, semantic, hybrid]   # E2.1
+  memory_representations: [text_only, image_only, hybrid] # E2.3
+  retrieval_signals: [semantic, semantic_time, semantic_entities, semantic_time_entities] # E2.4
+  topk_sweep: [1, 3, 5, 10, 20]                            # E2.5
+  retrieval_weights:            # hybrid score = a*sem + b*temporal + c*entity
+    alpha: 0.6
+    beta: 0.2
+    gamma: 0.2
+  # These weights are a STARTING POINT, not "optimal". Tune on dev holdout or
+  # treat the sweep as an experiment (do not tune on the frozen eval set).
+
+# ---------------- Experiment 3 ----------------
+e3_efficiency_production:
+  compare_models: [qwen2_5_vl_7b, llava_next_7b]  # stand-in for larger/smaller
+  quantization_configs: [none, int8, int4]        # guard by hardware support
+  retrieval_conditions: [vlm_only, vlm_plus_retrieval]
+  topk_sweep: [1, 3, 5, 10, 20]
+  latency_components:            # measured separately (E3.4) - never one number
+    - image_preprocessing
+    - vision_encoding
+    - memory_embedding
+    - faiss_retrieval
+    - prompt_construction
+    - generation
+    - total
+  warmup_runs: 2
+  timed_runs: 5

@@ -1,0 +1,52 @@
+# Dataset locations and manifest settings.
+# Do NOT commit raw datasets. See scripts/download_gqa.py and REFERENCES.md.
+
+gqa:
+  root: ${oc.env:GQA_ROOT,./data/raw/gqa}
+  images_dir: images
+  scene_graphs:
+    train: sceneGraphs/train_sceneGraphs.json
+    val: sceneGraphs/val_sceneGraphs.json
+  questions:
+    # GQA ships balanced + all splits; balanced is usually sufficient here.
+    val_balanced: questions/val_balanced_questions.json
+  # Which split to draw the frozen benchmark from.
+  benchmark_split: val
+
+visual_genome:
+  # Supporting annotation source only (not a second full benchmark).
+  root: ${oc.env:VISUAL_GENOME_ROOT,./data/raw/visual_genome}
+  objects: objects.json
+  attributes: attributes.json
+  relationships: relationships.json
+  region_descriptions: region_descriptions.json
+
+clevr:
+  # Controlled diagnostic (~30 examples). Synthetic; appendix only.
+  root: ${oc.env:CLEVR_ROOT,./data/raw/clevr}
+  images_dir: images/val
+  scenes: scenes/CLEVR_val_scenes.json
+  questions: questions/CLEVR_val_questions.json
+  diagnostic_size: 30
+
+coco:
+  # Optional generalization/sanity dataset. Not part of the MVP.
+  root: ${oc.env:COCO_ROOT,./data/raw/coco}
+  enabled: false
+  sanity_size: 25
+
+manifest:
+  # The frozen 120-image GQA benchmark. Versioned in git.
+  path: data/manifests/gqa_benchmark_v1.csv
+  version: v1
+  total_images: 120
+  buckets:
+    A_multi_object:        { count: 20, min_objects: 5 }
+    B_attributes:          { count: 20 }
+    C_spatial:             { count: 20 }
+    D_human_object:        { count: 20 }
+    E_complex_relational:  { count: 20 }
+    F_hard_ambiguous:      { count: 20 }
+  # Reserve a small development subset so tuning never touches the frozen eval set.
+  dev_holdout_fraction: 0.0   # set >0 (e.g. 0.15) when tuning retrieval weights
+  random_seed: 20260815

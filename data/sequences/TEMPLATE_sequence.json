@@ -1,0 +1,26 @@
+{
+  "sequence_id": "seq_XXXX",
+  "description": "One-line description of the scenario.",
+  "source": "video_frames | designed_photos | synthetic | mixed",
+  "events": [
+    {
+      "event_id": "event_0001",
+      "timestamp": "2026-08-14T08:30:00",
+      "image_path": "relative/path/to/frame.jpg",
+      "description": "Natural-language scene description (VLM-generated or authored).",
+      "entities": ["entity_a", "entity_b"],
+      "relationships": [{"subject": "entity_a", "relation": "on", "object": "entity_b"}]
+    }
+  ],
+  "questions": [
+    {
+      "question_id": "q1",
+      "question": "…",
+      "answer": "gold short answer",
+      "relevant_event_ids": ["event_0001"],
+      "relevant_time_span": ["2026-08-14T08:30:00", "2026-08-14T09:15:00"],
+      "question_type": "direct_retrieval | latest_state | before_after | cross_event | change_detection | temporal_order | abstention",
+      "requires_abstention": false
+    }
+  ]
+}

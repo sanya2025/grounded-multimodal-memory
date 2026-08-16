@@ -1,0 +1,45 @@
+# Vision-Language model registry.
+# Pin exact model IDs AND revisions for reproducibility (Reproducibility rule #2).
+# `revision` may be a commit SHA or tag; leave as "main" only for scaffolding.
+
+defaults:
+  device: ${oc.env:GMM_DEVICE,cpu}   # "cuda" | "mps" | "cpu"
+  dtype: bfloat16                    # torch dtype string; adapters map to torch.*
+  max_new_tokens: 512
+  temperature: 0.0                   # deterministic by default (E1 requirement)
+
+models:
+  qwen2_5_vl_7b:
+    adapter: qwen_vl                 # -> src/grounded_memory/models/qwen_vl.py
+    hf_id: Qwen/Qwen2.5-VL-7B-Instruct
+    revision: main                   # TODO: pin to a specific commit SHA before freezing
+    dtype: bfloat16
+    quantization: null               # null | "int8" | "int4" (see configs + E3.2)
+    notes: >
+      Primary reproducible baseline. Structured visual understanding,
+      localization, multi-size family for later efficiency comparisons.
+
+  llava_next_7b:
+    adapter: llava                   # -> src/grounded_memory/models/llava.py
+    hf_id: llava-hf/llava-v1.6-mistral-7b-hf
+    revision: main                   # TODO: pin to a specific commit SHA before freezing
+    dtype: float16
+    quantization: null
+    notes: >
+      Architectural / model-family contrast. LLaVA-NeXT (1.6) 7B-class.
+
+  # Optional appendix/extension model. Do NOT silently change the frozen
+  # benchmark once E1 results exist; run as a separate labelled extension.
+  qwen3_vl_extension:
+    adapter: qwen_vl
+    hf_id: Qwen/Qwen3-VL-7B-Instruct   # TODO: verify exact id/availability when used
+    revision: main
+    dtype: bfloat16
+    quantization: null
+    enabled: false
+
+# Efficiency-experiment (E3.1) size pairs: (larger, smaller) for the same family.
+efficiency_pairs:
+  qwen_family:
+    larger: qwen2_5_vl_7b
+    smaller: null                    # TODO: e.g. a 3B-class Qwen2.5-VL when added
