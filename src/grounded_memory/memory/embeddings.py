@@ -42,6 +42,36 @@ class HashingTextEmbedder:
         return l2_normalize(vec)
 
 
+class OllamaEmbedder:
+    """Real semantic embeddings from a local Ollama embedding model.
+
+    Defaults to ``nomic-embed-text`` (768-d). Use this to replace the
+    ``HashingTextEmbedder`` stand-in so E2 semantic/hybrid retrieval is genuinely
+    semantic. Requires the Ollama server running and the model pulled
+    (``ollama pull nomic-embed-text``). Stdlib HTTP only — no extra deps.
+    """
+
+    def __init__(
+        self,
+        model: str = "nomic-embed-text",
+        endpoint: str | None = None,
+        dim: int = 768,
+    ) -> None:
+        self.model = model
+        self.endpoint = endpoint
+        self.dim = dim
+
+    def embed_text(self, text: str) -> np.ndarray:
+        from grounded_memory import ollama_client
+
+        resp = ollama_client.post_json(
+            "/api/embeddings", {"model": self.model, "prompt": text}, endpoint=self.endpoint
+        )
+        vec = np.asarray(resp["embedding"], dtype=np.float32)
+        self.dim = int(vec.shape[0])
+        return l2_normalize(vec)
+
+
 def _tokenize(text: str) -> list[str]:
     return [t for t in "".join(c.lower() if c.isalnum() else " " for c in text).split() if t]
 
@@ -58,4 +88,10 @@ def cosine_similarity(a: np.ndarray, b: np.ndarray) -> float:
     return float(np.dot(a, b) / denom)
 
 
-__all__ = ["Embedder", "HashingTextEmbedder", "l2_normalize", "cosine_similarity"]
+__all__ = [
+    "Embedder",
+    "HashingTextEmbedder",
+    "OllamaEmbedder",
+    "l2_normalize",
+    "cosine_similarity",
+]

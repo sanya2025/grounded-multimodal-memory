@@ -53,3 +53,8 @@ Thumbs.db
 .idea/
 .vscode/
 .vscode/settings.json
+
+
+
+# notes folder (personal, local-only)
+notes/
