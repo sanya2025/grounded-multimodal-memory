@@ -73,11 +73,11 @@ def draw_boxes(
 
     Boxes are GQA's pixel ``x, y, w, h`` (top-left + size). Requires the
     ``viz`` extra (matplotlib) -- imported lazily so importing this module
-    doesn't require it.
+    doesn't require it. Deliberately does NOT force a backend (unlike
+    plotting/figures.py's Agg-forcing): this is called from a live notebook
+    kernel, which needs its own inline backend to actually display the
+    figure -- forcing Agg here would silently suppress it.
     """
-    import matplotlib
-
-    matplotlib.use("Agg")  # headless-safe (matches plotting/figures.py convention)
     import matplotlib.pyplot as plt
     from matplotlib.patches import Rectangle
     from PIL import Image
