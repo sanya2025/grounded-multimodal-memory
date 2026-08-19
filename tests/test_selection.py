@@ -8,6 +8,8 @@ from grounded_memory.data.selection import (
     assign_bucket,
     bucket_features,
     build_candidate_manifest,
+    next_candidate,
+    rank_candidates,
 )
 
 
@@ -68,3 +70,55 @@ def test_manifest_row_csv_header_matches_row_length():
 
     row = ManifestRow("1", "val", "A_multi_object", 5, 3, 2, "reason")
     assert len(row.to_csv_row()) == len(ManifestRow.csv_header())
+
+
+def _spatial_sg(spatial_hits: int) -> SceneGraph:
+    return _sg(
+        {
+            f"o{i}": {
+                "name": f"obj{i}", "attributes": [],
+                "relations": [{"name": "to the left of", "object": "o0"}],
+            }
+            for i in range(spatial_hits)
+        }
+    )
+
+
+def test_rank_candidates_orders_by_bucket_score_descending():
+    scene_graphs = {
+        "low": _spatial_sg(1),
+        "high": _spatial_sg(3),
+        "mid": _spatial_sg(2),
+    }
+    ranked = rank_candidates(scene_graphs, "C_spatial", exclude=set())
+    assert ranked == ["high", "mid", "low"]
+
+
+def test_rank_candidates_skips_excluded_ids():
+    scene_graphs = {"a": _spatial_sg(3), "b": _spatial_sg(2), "c": _spatial_sg(1)}
+    ranked = rank_candidates(scene_graphs, "C_spatial", exclude={"a"})
+    assert ranked == ["b", "c"]
+
+
+def _plain_objects(n: int) -> dict:
+    return {f"o{i}": {"name": f"obj{i}", "attributes": [], "relations": []} for i in range(n)}
+
+
+def test_rank_candidates_bucket_a_enforces_min_objects():
+    scene_graphs = {
+        "few": _sg(_plain_objects(3)),
+        "enough": _sg(_plain_objects(6)),
+    }
+    ranked = rank_candidates(scene_graphs, "A_multi_object", exclude=set())
+    assert ranked == ["enough"]  # "few" has only 3 objects, below the floor of 5
+
+    # The same floor does NOT apply to other buckets.
+    ranked_other_bucket = rank_candidates(scene_graphs, "B_attributes", exclude=set())
+    assert set(ranked_other_bucket) == {"few", "enough"}
+
+
+def test_next_candidate_returns_best_ranked_or_none_when_exhausted():
+    scene_graphs = {"a": _spatial_sg(3), "b": _spatial_sg(1)}
+    assert next_candidate(scene_graphs, "C_spatial", exclude=set()) == "a"
+    assert next_candidate(scene_graphs, "C_spatial", exclude={"a"}) == "b"
+    assert next_candidate(scene_graphs, "C_spatial", exclude={"a", "b"}) is None

@@ -52,6 +52,7 @@ notebooks = [
     "jupyter>=1.0",
     "ipykernel>=6.29",
     "nbformat>=5.9",
+    "ipywidgets>=8.0",
 ]
 dev = [
     "pytest>=8.0",

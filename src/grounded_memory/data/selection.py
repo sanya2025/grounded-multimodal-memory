@@ -30,6 +30,7 @@ _INTERACTION_TERMS = {
     "holding", "wearing", "using", "sitting on", "carrying", "riding", "eating", "looking at"
 }
 _HUMAN_LABELS = {"person", "man", "woman", "boy", "girl", "child", "people"}
+_MIN_OBJECTS_A = 5  # bucket A's "at least 5 meaningful objects" floor
 
 
 @dataclass
@@ -155,4 +156,37 @@ def build_candidate_manifest(
     return rows
 
 
-__all__ = ["BUCKETS", "ManifestRow", "bucket_features", "assign_bucket", "build_candidate_manifest"]
+def rank_candidates(
+    scene_graphs: dict[str, SceneGraph], bucket: str, exclude: set[str]
+) -> list[str]:
+    """Full candidate pool for ``bucket``, best-fit first, skipping ``exclude``.
+
+    Used for reject-and-replace during manual review: the reviewer excludes
+    images already used elsewhere in the manifest plus previously-rejected
+    ones, and gets the next-best remaining fit for that bucket. Bucket A
+    additionally requires ``>= _MIN_OBJECTS_A`` objects, matching
+    ``build_candidate_manifest``'s own selection rule for that bucket.
+    """
+    pool = [
+        img_id
+        for img_id in scene_graphs
+        if img_id not in exclude
+        and (bucket != "A_multi_object" or scene_graphs[img_id].num_objects() >= _MIN_OBJECTS_A)
+    ]
+    return sorted(
+        pool, key=lambda img_id: bucket_features(scene_graphs[img_id])[bucket], reverse=True
+    )
+
+
+def next_candidate(
+    scene_graphs: dict[str, SceneGraph], bucket: str, exclude: set[str]
+) -> str | None:
+    """Best-ranked not-yet-used candidate for ``bucket``, or ``None`` if the pool is exhausted."""
+    ranked = rank_candidates(scene_graphs, bucket, exclude)
+    return ranked[0] if ranked else None
+
+
+__all__ = [
+    "BUCKETS", "ManifestRow", "bucket_features", "assign_bucket", "build_candidate_manifest",
+    "rank_candidates", "next_candidate",
+]
