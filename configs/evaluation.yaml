@@ -2,21 +2,42 @@
 # and statistical-reporting settings.
 
 # Relation synonym normalization. Map surface forms -> canonical relation.
+# Entries below (above/below/behind/in_front_of/near/inside/under/walking_on/
+# skiing_on) are grounded in actual GQA relation-phrase frequency across the
+# frozen 120-image manifest (see notes/done_so_far.md) -- not guessed. A
+# leading "is"/"are"/"was"/"were" is stripped in code (normalize_relation),
+# so "is above" already matches "above" without a separate config entry.
 relation_normalization:
   holding: [holding, holds, "is holding", carrying, grasping]
   wearing: [wearing, wears, "dressed in", "has on"]
   sitting_on: [sitting on, "seated on", "sits on"]
   standing_on: [standing on, "stands on"]
+  walking_on: [walking on]
+  skiing_on: [skiing on]
   riding: [riding, rides, "riding on"]
   using: [using, uses, operating]
   eating: [eating, eats]
   looking_at: [looking at, watching, "gazing at"]
   next_to: [next to, beside, "adjacent to", "alongside"]
-  on: [on, "on top of", "resting on", atop]
+  "on": ["on", "on top of", "resting on", atop]
+  above: [above]
+  below: [below, beneath]
+  behind: [behind]
+  in_front_of: ["in front of"]
+  near: [near, "close to"]
+  inside: [inside, "in"]
+  under: [under, underneath]
+  left_of: ["to the left of", "left of"]
+  right_of: ["to the right of", "right of"]
 
 # Canonical spatial relations and their opposites (for counterfactual probes).
+# NOTE: "on" must stay quoted everywhere below -- YAML 1.1 (PyYAML's default
+# loader) parses the bareword `on` as the boolean True, not the string "on".
+# This silently corrupted relation_normalization/spatial_relations until it
+# was caught by evaluation/structured_scene.py's tests actually exercising
+# normalize_relation() against real data for the first time.
 spatial_relations:
-  canonical: [left_of, right_of, above, below, in_front_of, behind, inside, near, on, under]
+  canonical: [left_of, right_of, above, below, in_front_of, behind, inside, near, "on", under]
   opposites:
     left_of: right_of
     right_of: left_of
@@ -24,8 +45,8 @@ spatial_relations:
     below: above
     in_front_of: behind
     behind: in_front_of
-    on: under
-    under: on
+    "on": under
+    under: "on"
 
 # Object-label normalization (singular/plural + common synonyms).
 object_normalization:

@@ -33,10 +33,23 @@ def normalize_simple(label: str) -> str:
     return s
 
 
+_AUX_PREFIXES = ("is ", "are ", "was ", "were ")
+
+
 def normalize_relation(relation: str, cfg: dict | None = None) -> str:
-    """Map a surface relation phrase to its canonical form."""
+    """Map a surface relation phrase to its canonical form.
+
+    Strips a leading auxiliary verb ("is"/"are"/"was"/"were") before matching,
+    so a model's natural phrasing ("is above") matches the same vocabulary
+    entry as the bare form ("above") without needing every "is X" variant
+    enumerated in configs/evaluation.yaml.
+    """
     cfg = cfg or _eval_cfg()
     r = relation.strip().lower()
+    for prefix in _AUX_PREFIXES:
+        if r.startswith(prefix):
+            r = r[len(prefix):]
+            break
     for canonical, surface_forms in cfg.get("relation_normalization", {}).items():
         if r == canonical or r in {s.lower() for s in surface_forms}:
             return canonical

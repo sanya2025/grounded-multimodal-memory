@@ -5,11 +5,13 @@ from __future__ import annotations
 import math
 
 from grounded_memory.evaluation.abstention import abstention_metrics, is_abstention
+from grounded_memory.evaluation.categorical import tuple_prf1
 from grounded_memory.evaluation.grounding import EvidenceLabel
 from grounded_memory.evaluation.hallucination import (
     evidence_support_rate,
     hallucination_rate,
 )
+from grounded_memory.evaluation.normalize import normalize_relation
 from grounded_memory.evaluation.objects import object_prf1
 from grounded_memory.evaluation.qa import normalize_answer, qa_accuracy
 from grounded_memory.evaluation.stats import bootstrap_ci, paired_bootstrap
@@ -70,6 +72,35 @@ def test_qa_accuracy_and_normalization():
     )
     assert res.correct == 2
     assert res.total == 3
+
+
+def test_tuple_prf1_reports_precision_and_recall_separately():
+    predicted = {("person", "holding", "cup"), ("person", "wearing", "hat")}
+    reference = {("person", "holding", "cup"), ("person", "riding", "bike")}
+    r = tuple_prf1(predicted, reference)
+    assert r.tp == 1 and r.fp == 1 and r.fn == 1
+    assert math.isclose(r.precision, 0.5)
+    assert math.isclose(r.recall, 0.5)
+
+
+def test_tuple_prf1_empty_reference_does_not_crash():
+    r = tuple_prf1(predicted={("a", "b", "c")}, reference=set())
+    assert r.precision == 0.0
+    assert r.recall == 0.0
+    assert r.f1 == 0.0
+
+
+def test_normalize_relation_strips_auxiliary_verb_prefix():
+    # A model's natural "is above" must match the bare canonical "above"
+    # without every "is X" variant being enumerated in configs/evaluation.yaml.
+    assert normalize_relation("is above") == normalize_relation("above") == "above"
+    assert normalize_relation("is holding") == "holding"
+
+
+def test_normalize_relation_maps_gqa_positional_phrases_to_canonical():
+    assert normalize_relation("to the left of") == "left_of"
+    assert normalize_relation("to the right of") == "right_of"
+    assert normalize_relation("in front of") == "in_front_of"
 
 
 def test_bootstrap_ci_is_deterministic_and_brackets_mean():
