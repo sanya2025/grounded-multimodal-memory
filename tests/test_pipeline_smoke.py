@@ -29,6 +29,9 @@ def test_run_three_conditions_produces_records():
     assert conditions == {"standard", "grounded", "structured"}
     # Every record retains raw prediction text.
     assert all(r.prediction for r in records)
+    # GenerationOutput.metadata survives into the persisted record (backend
+    # extras like Ollama's thinking_fallback must not be silently dropped).
+    assert all(isinstance(r.generation_metadata, dict) for r in records)
 
 
 @pytest.mark.integration

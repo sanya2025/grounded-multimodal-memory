@@ -38,8 +38,53 @@ models:
     quantization: null
     enabled: false
 
+  qwen3_vl_8b_ollama:
+    adapter: ollama                  # -> src/grounded_memory/models/ollama_vlm.py
+    ollama_model: "qwen3-vl:8b"
+    max_new_tokens: 6144             # thinking model: 4096 still truncated ~24% of the hardest
+                                      # grounded-condition images in the full 120-image E1 run
+    notes: >
+      Primary local E1 baseline (Ollama). Upgrade of qwen2_5_vl_7b at the
+      same ~8B scale -- no architecture/scale confound introduced.
+      Requires `ollama serve` + `ollama pull qwen3-vl:8b`. See notes/OLLAMA.md.
+
+  llava_ollama:
+    adapter: ollama
+    ollama_model: "llava:7b"
+    max_new_tokens: 2048             # 512 default truncated 49-64% of grounded/structured
+                                      # responses in the full 120-image E1 run
+    notes: >
+      E1 architecture-contrast partner (Ollama), same ~7-8B scale as
+      qwen3_vl_8b_ollama, different model family. Requires
+      `ollama pull llava:7b`.
+
+  # Optional appendix/extension models (Ollama). Not part of the frozen E1
+  # run -- see efficiency_pairs.qwen_family_ollama and the "extension" note
+  # on qwen3_vl_extension above for the same pattern.
+  qwen3_vl_30b_ollama:
+    adapter: ollama
+    ollama_model: "qwen3-vl:30b"
+    enabled: false
+    max_new_tokens: 4096             # same thinking-model budget as qwen3_vl_8b_ollama
+    notes: >
+      Same-family, larger-scale partner to qwen3_vl_8b_ollama -- feeds
+      efficiency_pairs.qwen_family_ollama for a future E3.1 run.
+
+  gemma3_27b_ollama:
+    adapter: ollama
+    ollama_model: "gemma3:27b"
+    enabled: false
+    notes: >
+      Appendix/extension model for a future cross-family comparison.
+      Excluded from E1 by design: pairing a 27B model against the ~8B
+      baseline pair would confound architecture with scale.
+
 # Efficiency-experiment (E3.1) size pairs: (larger, smaller) for the same family.
 efficiency_pairs:
   qwen_family:
     larger: qwen2_5_vl_7b
     smaller: null                    # TODO: e.g. a 3B-class Qwen2.5-VL when added
+
+  qwen_family_ollama:
+    larger: qwen3_vl_30b_ollama
+    smaller: qwen3_vl_8b_ollama

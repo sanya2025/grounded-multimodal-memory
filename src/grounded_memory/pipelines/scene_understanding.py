@@ -58,6 +58,7 @@ def run_conditions_for_image(
                 input_tokens=gen.input_tokens,
                 output_tokens=gen.output_tokens,
                 metrics={"condition": condition, "parse_error": ext.parse_error},
+                generation_metadata=gen.metadata,
             )
         )
     return records

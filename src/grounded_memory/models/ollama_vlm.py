@@ -12,6 +12,11 @@ Notes for this project's experiments:
 - Timings come from Ollama's own counters (nanoseconds): prompt-eval, generation,
   load, total. Ollama does NOT expose a separate vision-encoding time, so the
   E3.4 latency breakdown is coarser than a raw Transformers forward pass.
+- "Thinking" models (e.g. qwen3-vl) return chain-of-thought in a separate
+  ``thinking`` field and can leave ``response`` empty -- observed consistently
+  with ``format="json"`` even on a clean, non-truncated finish. We fall back to
+  ``thinking`` when ``response`` is empty and flag it in ``metadata`` so it's
+  never a silent substitution (see notes/OLLAMA.md caveats).
 """
 
 from __future__ import annotations
@@ -87,6 +92,11 @@ class OllamaVLM(VisionLanguageModel):
         wall = time.perf_counter() - t0
 
         text = resp.get("response", "")
+        thinking = resp.get("thinking", "")
+        used_thinking_fallback = not text and bool(thinking)
+        if used_thinking_fallback:
+            text = thinking
+
         ns = 1e9
         comp = {
             "load": resp.get("load_duration", 0) / ns,
@@ -101,7 +111,12 @@ class OllamaVLM(VisionLanguageModel):
             output_tokens=resp.get("eval_count"),
             latency_s=latency,
             component_latencies=comp,
-            metadata={"backend": "ollama", "model": self.ollama_model},
+            metadata={
+                "backend": "ollama",
+                "model": self.ollama_model,
+                "thinking_fallback": used_thinking_fallback,
+                "done_reason": resp.get("done_reason"),
+            },
         )
 
 

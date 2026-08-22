@@ -30,7 +30,9 @@ def load_manifest(path: str | Path) -> list[dict]:
 def main() -> None:
     exp_cfg = load_config("experiments")
     data_cfg = load_config("datasets")
+    models_cfg = load_config("models")
     e1 = exp_cfg["e1_grounded_scene_understanding"]
+    default_max_new_tokens = exp_cfg["generation"]["max_new_tokens"]
     ap = argparse.ArgumentParser(description="Run E1 grounded scene understanding.")
     ap.add_argument("--mock", action="store_true", help="Use MockVLM (offline).")
     ap.add_argument("--manifest", default=data_cfg["manifest"]["path"])
@@ -66,7 +68,9 @@ def main() -> None:
 
     images_root = Path(args.images_dir) if args.images_dir else None
     for name in model_names:
-        model = MockVLM() if name == "mock" else load_model(name)
+        model = MockVLM() if name == "mock" else load_model(name, models_cfg)
+        model_entry = models_cfg.get("models", {}).get(name, {})
+        max_new_tokens = model_entry.get("max_new_tokens", default_max_new_tokens)
         for condition in conditions:
             records = []
             for row in manifest:
@@ -79,6 +83,7 @@ def main() -> None:
                     experiment_id="E1", run_id=run_id, conditions=[condition],
                     dataset="gqa", dataset_version=data_cfg["manifest"]["version"],
                     manifest_version=data_cfg["manifest"]["version"],
+                    max_new_tokens=max_new_tokens,
                 )
                 records.extend(recs)
             out = Path(e1["results_dir"]) / f"e1_{model.name}_{condition}__{run_id}.jsonl"

@@ -32,4 +32,8 @@ def load_model(name: str, models_cfg: dict | None = None) -> VisionLanguageModel
         return LlavaModel(entry, defaults)
     if adapter == "mock":
         return MockVLM()
+    if adapter == "ollama":
+        from grounded_memory.models.ollama_vlm import OllamaVLM
+
+        return OllamaVLM(entry, defaults)
     raise ValueError(f"Unknown adapter {adapter!r} for model {name!r}")

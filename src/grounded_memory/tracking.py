@@ -75,6 +75,10 @@ class PredictionRecord:
     input_tokens: int | None = None
     output_tokens: int | None = None
     metrics: dict[str, Any] = field(default_factory=dict)
+    # Backend-specific extras from GenerationOutput.metadata (e.g. Ollama's
+    # thinking_fallback / done_reason) -- preserved so nothing is silently
+    # dropped, per this project's "never fabricate, keep raw provenance" rule.
+    generation_metadata: dict[str, Any] = field(default_factory=dict)
     git_commit: str = field(default_factory=git_commit)
     hardware: dict[str, str] = field(default_factory=hardware_info)
     timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
