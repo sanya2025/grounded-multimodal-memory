@@ -1,5 +1,7 @@
 # Grounded Multimodal Scene Memory
 
+[![CI](https://github.com/sanya2025/grounded-multimodal-memory/actions/workflows/ci.yml/badge.svg)](https://github.com/sanya2025/grounded-multimodal-memory/actions/workflows/ci.yml)
+
 **Visual Evidence, Temporal Retrieval, and Efficient Multimodal Reasoning**
 
 Can a multimodal AI system distinguish visual evidence from plausible
@@ -15,9 +17,13 @@ We evaluate:
 5. abstention when visual evidence is insufficient,
 6. accuracy-latency-memory tradeoffs.
 
-> **Strongest result figure — placeholder.** This slot will hold the strongest
-> final figure (e.g. the E3.5 accuracy-latency-memory frontier) once experiments
-> are run and results are frozen. **No results are reported yet.**
+> **Strongest result figure — placeholder.** E1's 720 raw predictions are frozen
+> and structured-condition metrics (object/attribute/relation/spatial PRF1,
+> tri-state hallucination, evidence-support, bootstrap CIs) are computed — see
+> `results/tables/`. Standard/grounded-condition metrics, E2, E3, and final
+> figures are still pending. This slot will hold the strongest final figure
+> (e.g. the E3.5 accuracy-latency-memory frontier) once the full experiment
+> matrix is frozen. **No headline results are reported yet.**
 
 ---
 
@@ -66,8 +72,12 @@ Setup pass (this scaffold):
 - [x] FastAPI service (`/health`, `/observe`, `/query`) + provenance-aware answers
 - [x] Experiment tracking (provenance-complete records, no-clobber JSONL)
 - [x] 14 companion notebook skeletons + runnable scripts
-- [ ] Download GQA and freeze the 120-image manifest v1 *(requires dataset)*
-- [ ] Run E1 720 predictions with real VLMs *(requires GPU + weights)*
+- [x] CI (GitHub Actions: ruff + pytest on push/PR, Python 3.11 & 3.12)
+- [x] Download GQA and freeze the 120-image manifest v1
+- [x] Run E1 720 predictions with real VLMs *(local Ollama: qwen3-vl:8b + llava:7b)*
+- [x] Structured-condition E1 metrics computed (object/attribute/relation/
+      spatial PRF1, tri-state hallucination, evidence-support, bootstrap CIs)
+- [ ] Standard/grounded-condition metrics *(no free-text extraction path yet)*
 - [ ] Build the temporal dataset and run E2 *(requires data collection)*
 - [ ] Profile E3 latency/quantization *(requires GPU)*
 - [ ] Freeze result tables, generate figures, write blogs
@@ -139,6 +149,12 @@ pytest -m "not gpu"       # explicitly skip anything GPU-bound
 
 Note: `.[dev]`/`.[api]` extras must be installed for the full `pytest` suite. A
 dependency-light validation of the core logic is available in the setup notes.
+
+CI (`.github/workflows/ci.yml`) runs `ruff check src scripts tests` and
+`pytest -q` on every push/PR to `main`, on Python 3.11 and 3.12. It's scoped
+to `src`/`scripts`/`tests` (matching `pyproject.toml`'s own `[tool.ruff] src`
+config) — the notebooks aren't linted, since they're exploratory companions,
+not package code.
 
 ## References
 

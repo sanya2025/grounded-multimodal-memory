@@ -9,6 +9,7 @@ normalizer so the experiment code and notebooks import clearly-named functions.
 from __future__ import annotations
 
 from collections.abc import Callable, Iterable
+from collections.abc import Set as AbstractSet
 from dataclasses import dataclass
 
 from grounded_memory.evaluation.objects import PRF1
@@ -32,8 +33,8 @@ def accuracy(
 
 
 def tuple_accuracy(
-    predicted: set[tuple[str, ...]],
-    reference: set[tuple[str, ...]],
+    predicted: AbstractSet[tuple[str, ...]],
+    reference: AbstractSet[tuple[str, ...]],
     normalizer: Callable[[str], str] | None = None,
 ) -> AccuracyResult:
     """Fraction of reference tuples recovered by the prediction set.
@@ -52,8 +53,8 @@ def tuple_accuracy(
 
 
 def tuple_prf1(
-    predicted: set[tuple[str, ...]],
-    reference: set[tuple[str, ...]],
+    predicted: AbstractSet[tuple[str, ...]],
+    reference: AbstractSet[tuple[str, ...]],
     normalizer: Callable[[str], str] | None = None,
 ) -> PRF1:
     """Precision/recall/F1 over tuples (unlike tuple_accuracy, which is recall-only).

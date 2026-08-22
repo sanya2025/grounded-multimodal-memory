@@ -11,12 +11,12 @@ Every factual claim therefore carries an explicit evidence type and confidence.
 
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class EvidenceType(str, Enum):
+class EvidenceType(StrEnum):
     """How well a claim is grounded in directly observable visual evidence."""
 
     DIRECT = "direct_or_supported"       # visible in the image
@@ -25,7 +25,7 @@ class EvidenceType(str, Enum):
     INSUFFICIENT = "insufficient_evidence"  # model declines: not determinable
 
 
-class ConfidenceCategory(str, Enum):
+class ConfidenceCategory(StrEnum):
     """Coarse confidence bucket, usable when a numeric score is unavailable."""
 
     HIGH = "high"

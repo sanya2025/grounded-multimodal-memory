@@ -11,13 +11,13 @@ not-verifiable.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from grounded_memory.config import load_config
 
 
-class ProbeType(str, Enum):
+class ProbeType(StrEnum):
     OBJECT = "object"
     ATTRIBUTE = "attribute"
     RELATIONSHIP = "relationship"

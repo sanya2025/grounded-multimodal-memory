@@ -34,7 +34,7 @@ def mrr(retrieved_lists: Sequence[Sequence[str]], relevant_sets: Sequence[set[st
     """Mean reciprocal rank across queries."""
     if not retrieved_lists:
         return 0.0
-    rr = [reciprocal_rank(r, rel) for r, rel in zip(retrieved_lists, relevant_sets)]
+    rr = [reciprocal_rank(r, rel) for r, rel in zip(retrieved_lists, relevant_sets, strict=True)]
     return sum(rr) / len(rr)
 
 
@@ -61,7 +61,7 @@ def mean_recall_at_k(
 ) -> float:
     if not retrieved_lists:
         return 0.0
-    vals = [recall_at_k(r, rel, k) for r, rel in zip(retrieved_lists, relevant_sets)]
+    vals = [recall_at_k(r, rel, k) for r, rel in zip(retrieved_lists, relevant_sets, strict=True)]
     return sum(vals) / len(vals)
 
 

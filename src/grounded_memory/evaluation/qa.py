@@ -54,7 +54,7 @@ def qa_accuracy(predictions: list[str], references: list[str]) -> QAResult:
     if len(predictions) != len(references):
         raise ValueError("predictions and references must be the same length")
     total = len(predictions)
-    correct = sum(1 for p, r in zip(predictions, references) if answer_matches(p, r))
+    correct = sum(1 for p, r in zip(predictions, references, strict=True) if answer_matches(p, r))
     return QAResult(correct / total if total else 0.0, correct, total)
 
 

@@ -13,7 +13,7 @@ import os
 import platform
 import subprocess
 from dataclasses import asdict, dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -81,7 +81,7 @@ class PredictionRecord:
     generation_metadata: dict[str, Any] = field(default_factory=dict)
     git_commit: str = field(default_factory=git_commit)
     hardware: dict[str, str] = field(default_factory=hardware_info)
-    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    timestamp: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
 
     def to_json(self) -> str:
         return json.dumps(asdict(self), default=str)
@@ -114,7 +114,7 @@ def make_run_id(prefix: str = "run") -> str:
     stamp = os.environ.get("GMM_RUN_ID")
     if stamp:
         return stamp
-    return f"{prefix}_{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}"
+    return f"{prefix}_{datetime.now(UTC).strftime('%Y%m%dT%H%M%SZ')}"
 
 
 __all__ = [

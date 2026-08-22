@@ -13,6 +13,7 @@ from grounded_memory.evaluation.abstention import (
     abstention_metrics,
     is_abstention,
 )
+from grounded_memory.evaluation.categorical import accuracy
 from grounded_memory.evaluation.hallucination import (
     evidence_support_rate,
     hallucination_rate,
@@ -21,7 +22,6 @@ from grounded_memory.evaluation.objects import object_prf1
 from grounded_memory.evaluation.qa import normalize_answer, qa_accuracy
 from grounded_memory.evaluation.retrieval import mrr, ndcg_at_k, recall_at_k
 from grounded_memory.evaluation.stats import bootstrap_ci, paired_bootstrap
-from grounded_memory.evaluation.categorical import accuracy
 
 __all__ = [
     "object_prf1",

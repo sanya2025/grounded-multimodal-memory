@@ -7,13 +7,13 @@ Only a claim that contradicts an annotated fact is ``CONTRADICTED``.
 
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from grounded_memory.evaluation.normalize import normalize_object, normalize_relation
 
 
-class EvidenceLabel(str, Enum):
+class EvidenceLabel(StrEnum):
     SUPPORTED = "supported"
     CONTRADICTED = "contradicted"
     NOT_VERIFIABLE = "not_verifiable"

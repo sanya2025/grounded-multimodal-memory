@@ -142,10 +142,17 @@ def score_structured_scene(
     labels: list[EvidenceLabel] = [
         verify_object_claim(e.label, scene_graph.raw) for e in scene.entities
     ]
-    for r in (*scene.relationships, *scene.spatial_relations):
+    for r in scene.relationships:
         labels.append(
             verify_relation_claim(
                 _resolve(r.subject, labels_by_id), r.relation, _resolve(r.object, labels_by_id),
+                scene_graph.raw,
+            )
+        )
+    for sr in scene.spatial_relations:
+        labels.append(
+            verify_relation_claim(
+                _resolve(sr.subject, labels_by_id), sr.relation, _resolve(sr.object, labels_by_id),
                 scene_graph.raw,
             )
         )

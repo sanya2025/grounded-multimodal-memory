@@ -7,8 +7,8 @@ Figures use a single, colorblind-safe categorical palette for consistency.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Sequence
 
 # Colorblind-safe qualitative palette (Okabe-Ito).
 PALETTE = ["#0072B2", "#E69F00", "#009E73", "#D55E00", "#CC79A7", "#56B4E9", "#F0E442"]

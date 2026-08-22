@@ -1,0 +1,40 @@
+name: CI
+
+# NOTE: "on" is quoted -- YAML 1.1 parsers (e.g. PyYAML's default loader)
+# read the bareword `on` as the boolean True, not the string "on" (same
+# class of bug fixed in configs/evaluation.yaml this session). GitHub's own
+# workflow parser tolerates the unquoted form, but quoting avoids relying on
+# that and keeps this file parseable by strict YAML 1.1 tools too.
+"on":
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install package (dev + api extras)
+        run: pip install -e ".[dev,api]"
+
+      - name: Lint (ruff)
+        # Scoped to src/scripts/tests, matching pyproject.toml's own
+        # [tool.ruff] src config -- `ruff check .` also lints the notebooks/
+        # (ruff has native .ipynb support), which were never meant to be
+        # ruff-clean and aren't part of this scope.
+        run: ruff check src scripts tests
+
+      - name: Test (pytest)
+        run: pytest -q
