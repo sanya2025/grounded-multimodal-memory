@@ -38,6 +38,9 @@ api = [
     "fastapi>=0.110",
     "uvicorn>=0.29",
     "python-multipart>=0.0.9",
+    # starlette.testclient (used by tests/test_api.py) requires httpx2 as of
+    # recent starlette releases -- not installed transitively, must be explicit.
+    "httpx2>=2.0",
 ]
 viz = [
     "matplotlib>=3.7",
