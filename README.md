@@ -85,6 +85,14 @@ Setup pass (this scaffold):
       real now, not structurally 0.0. Non-spatial relations (holding,
       wearing, ...) still have no configured opposite, so a wrong claim
       there still reads as `not_verifiable` rather than `contradicted`.
+- [x] Notebook 05 finished: scores the frozen structured-condition E1
+      predictions against real GQA scene graphs end-to-end, cross-checked
+      against `results/tables/e1_structured_scene_metrics.csv` (exact match)
+- [x] Schema tolerance: `extra="ignore"` on the structured-output models
+      (`Entity`/`Relationship`/`SpatialRelation`/`Claim`/
+      `SceneRepresentation`) so an open-weights model inventing a stray JSON
+      key no longer fails the whole parse (`Uncertainty` intentionally left
+      strict)
 - [ ] Standard/grounded-condition metrics *(no free-text extraction path yet)*
 - [ ] Build the temporal dataset and run E2 *(requires data collection)*
 - [ ] Profile E3 latency/quantization *(requires GPU)*
@@ -153,6 +161,19 @@ pipeline and adapters, distinct from the frozen 720-prediction E1 run. Each
 writes a distinctly-named `nb03_baseline_preview__<run_id>.jsonl` /
 `nb04_bucket_preview__<run_id>.jsonl` that can never collide with the frozen
 `e1_*.jsonl` results.
+
+`02_build_120_image_manifest` has been re-run top-to-bottom with fresh
+executed outputs, adding a per-image review log
+(`data/manifests/gqa_review_log.csv`) and a review-annotated manifest copy
+(`data/manifests/gqa_benchmark_v1.review.csv`) alongside the frozen
+`gqa_benchmark_v1.csv` (unchanged).
+
+`05_scene_graph_evaluation` is finished: it loads the frozen 720-prediction
+E1 run and real GQA scene graphs, scores the structured condition
+(object/attribute/relationship/spatial/positional PRF1, tri-state
+hallucination/evidence-support) with bootstrap CIs, and cross-checks the
+result against `results/tables/e1_structured_scene_metrics.csv` (exact
+match).
 
 ## Reproducibility
 
