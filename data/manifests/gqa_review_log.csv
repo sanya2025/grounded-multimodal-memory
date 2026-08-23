@@ -1,0 +1,5 @@
+image_id,bucket,reason,replaced_by,timestamp
+2335241,A_multi_object,too cluttered,2368660,2026-08-19T17:13:50+00:00
+2315749,A_multi_object,one object,2342684,2026-08-19T17:14:48+00:00
+713655,F_hard_ambiguous,not hard,2317575,2026-08-19T17:20:49+00:00
+3701,F_hard_ambiguous,,2355874,2026-08-19T17:21:15+00:00
