@@ -53,6 +53,25 @@ def test_parse_balanced_braces_without_fence():
     assert result.scene.scene_summary == "hi"
 
 
+def test_scene_representation_tolerates_extra_keys_from_model_drift():
+    # extra="ignore": an open-weights model inventing an unexpected field
+    # (e.g. "raw_confidence") must not fail the whole parse -- it's silently
+    # dropped, not rejected. The original raw text is preserved separately
+    # regardless (PredictionRecord.prediction), so nothing is lost either way.
+    scene = SceneRepresentation.model_validate(
+        {
+            "scene_summary": "A dog runs.",
+            "entities": [
+                {"id": "dog_1", "label": "dog", "raw_confidence": "very high"}
+            ],
+            "claims": [],
+            "extra_top_level_field": "some model invented this",
+        }
+    )
+    assert scene.object_labels() == ["dog"]
+    assert not hasattr(scene.entities[0], "raw_confidence")
+
+
 def test_evidence_type_enum_values():
     assert EvidenceType.DIRECT.value == "direct_or_supported"
     assert EvidenceType.INSUFFICIENT.value == "insufficient_evidence"

@@ -36,7 +36,11 @@ class ConfidenceCategory(StrEnum):
 class Entity(BaseModel):
     """A detected object/agent in the scene."""
 
-    model_config = ConfigDict(extra="forbid")
+    # extra="ignore": tolerate minor JSON key drift from open-weights models
+    # (an extra field the model invents doesn't fail the whole parse). The
+    # original raw model text is always preserved separately regardless
+    # (PredictionRecord.prediction), so nothing is actually lost either way.
+    model_config = ConfigDict(extra="ignore")
 
     id: str = Field(..., description="Stable within-scene id, e.g. 'person_1'.")
     label: str = Field(..., description="Object/agent category, e.g. 'woman'.")
@@ -47,7 +51,7 @@ class Entity(BaseModel):
 class Relationship(BaseModel):
     """A non-spatial relation between two entities (subject -> relation -> object)."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="ignore")  # see Entity's model_config note
 
     subject: str = Field(..., description="Entity id.")
     relation: str = Field(..., description="e.g. 'holding', 'using', 'wearing'.")
@@ -58,7 +62,7 @@ class Relationship(BaseModel):
 class SpatialRelation(BaseModel):
     """A spatial relation (left_of, above, on, ...) between two entities."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="ignore")  # see Entity's model_config note
 
     subject: str
     relation: str = Field(..., description="Canonical spatial relation.")
@@ -69,7 +73,7 @@ class SpatialRelation(BaseModel):
 class Claim(BaseModel):
     """A single factual assertion with its supporting evidence and type."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="ignore")  # see Entity's model_config note
 
     claim: str
     evidence: str = Field(default="", description="What in the image supports this claim.")
@@ -94,7 +98,7 @@ class SceneRepresentation(BaseModel):
     when structured parsing fails (Reproducibility: never discard a prediction).
     """
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="ignore")  # see Entity's model_config note
 
     scene_summary: str = ""
     entities: list[Entity] = Field(default_factory=list)
