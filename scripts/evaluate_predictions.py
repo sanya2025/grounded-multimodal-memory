@@ -163,10 +163,13 @@ def main() -> None:
     print(
         "\nNote: standard/grounded conditions have no object/attribute/relation/"
         "spatial metrics -- there is no extraction path from free text yet. "
-        "Also note hallucination_rate is currently always 0.0: the tri-state "
-        "verifier (evaluation/grounding.py) never emits CONTRADICTED by design "
-        "today, only SUPPORTED/NOT_VERIFIABLE -- real contradiction detection "
-        "(e.g. model says 'red', scene graph says 'blue') is not implemented."
+        "hallucination_rate now reflects real CONTRADICTED detection for "
+        "attribute conflicts (e.g. predicted 'red', annotated 'blue' -- see "
+        "configs/evaluation.yaml 'attribute_categories') and spatial-opposite "
+        "conflicts (e.g. predicted 'left_of', annotated 'right_of' -- see "
+        "'spatial_relations.opposites'). Non-spatial relation claims (holding, "
+        "wearing, ...) and attributes outside the configured categories still "
+        "have no contradiction path and stay NOT_VERIFIABLE when unmatched."
     )
 
 

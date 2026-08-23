@@ -56,4 +56,37 @@ def normalize_relation(relation: str, cfg: dict | None = None) -> str:
     return r
 
 
-__all__ = ["normalize_object", "normalize_relation", "normalize_simple"]
+def attribute_category(attribute: str, cfg: dict | None = None) -> str | None:
+    """Which mutually-exclusive category (e.g. "color") an attribute belongs to.
+
+    Used to detect CONTRADICTED attribute claims: an object annotated "blue"
+    but predicted "red" is a conflict because color is mutually exclusive.
+    Returns None for attributes with no configured category (most attributes
+    stay NOT_VERIFIABLE rather than risk a false CONTRADICTED).
+    """
+    cfg = cfg or _eval_cfg()
+    a = normalize_simple(attribute)
+    for category, members in cfg.get("attribute_categories", {}).items():
+        if a in {normalize_simple(m) for m in members}:
+            return category
+    return None
+
+
+def spatial_opposite(relation: str, cfg: dict | None = None) -> str | None:
+    """The opposite of a canonical spatial relation (e.g. "left_of" -> "right_of").
+
+    Looks up the ALREADY-NORMALIZED relation in configs/evaluation.yaml's
+    spatial_relations.opposites (bidirectional -- both directions are listed
+    explicitly there, so no reverse lookup is needed here).
+    """
+    cfg = cfg or _eval_cfg()
+    return cfg.get("spatial_relations", {}).get("opposites", {}).get(relation)
+
+
+__all__ = [
+    "normalize_object",
+    "normalize_relation",
+    "normalize_simple",
+    "attribute_category",
+    "spatial_opposite",
+]

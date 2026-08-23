@@ -48,6 +48,20 @@ spatial_relations:
     "on": under
     under: "on"
 
+# Mutually-exclusive attribute categories, used to detect CONTRADICTED
+# attribute claims (e.g. predicted "red" when GQA annotates "blue" for the
+# same object -- a real conflict, not just an unverified extra claim).
+# Grounded in real attribute-phrase frequency across the frozen 120-image
+# manifest (see notes/done_so_far.md). Deliberately limited to color and
+# material: both are safe to treat as mutually exclusive for a given object.
+# Size/pose/state words (tall, large, standing, sitting, ...) are excluded on
+# purpose -- an object can plausibly be both "tall" and "large" at once, so
+# treating those as mutually exclusive would manufacture false contradictions.
+attribute_categories:
+  color: [white, black, brown, gray, grey, green, blue, red, yellow, orange,
+          silver, pink, purple, gold, tan, beige, "dark blue"]
+  material: [wood, metal, plastic, glass, stone, paper, brick]
+
 # Object-label normalization (singular/plural + common synonyms).
 object_normalization:
   lowercase: true

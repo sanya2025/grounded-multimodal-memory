@@ -141,6 +141,31 @@ def test_score_structured_scene_missing_objects_hurt_recall():
     assert result.objects.precision == 1.0
 
 
+def test_score_structured_scene_wrong_color_shows_up_as_real_hallucination():
+    # umbrella is annotated "black" in _scene_graph(); claiming "red" is a
+    # genuine, detectable conflict (both are in the "color" category).
+    scene = SceneRepresentation(
+        entities=[Entity(id="u1", label="umbrella", attributes=["red"])],
+    )
+    result = score_structured_scene(scene, _scene_graph())
+    assert EvidenceLabel.CONTRADICTED in result.evidence_labels
+    # labels: object claim ("umbrella" is annotated) -> SUPPORTED,
+    # attribute claim ("red" vs annotated "black") -> CONTRADICTED.
+    # strict rate = contradicted / (supported + contradicted) = 1/2.
+    assert result.hallucination_rate == 0.5
+
+
+def test_score_structured_scene_wrong_spatial_direction_is_contradicted():
+    # _scene_graph() annotates person "above" umbrella; claiming "below" is
+    # the spatial opposite -- a real conflict, not just unverified.
+    scene = SceneRepresentation(
+        entities=[Entity(id="p1", label="person"), Entity(id="u1", label="umbrella")],
+        spatial_relations=[SpatialRelation(subject="p1", relation="below", object="u1")],
+    )
+    result = score_structured_scene(scene, _scene_graph())
+    assert EvidenceLabel.CONTRADICTED in result.evidence_labels
+
+
 def test_score_structured_scene_empty_prediction_gives_zeroed_not_crashed():
     result = score_structured_scene(SceneRepresentation(), _scene_graph())
     assert result.objects.f1 == 0.0

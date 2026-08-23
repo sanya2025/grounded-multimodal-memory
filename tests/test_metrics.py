@@ -6,12 +6,20 @@ import math
 
 from grounded_memory.evaluation.abstention import abstention_metrics, is_abstention
 from grounded_memory.evaluation.categorical import tuple_prf1
-from grounded_memory.evaluation.grounding import EvidenceLabel
+from grounded_memory.evaluation.grounding import (
+    EvidenceLabel,
+    verify_attribute_claim,
+    verify_relation_claim,
+)
 from grounded_memory.evaluation.hallucination import (
     evidence_support_rate,
     hallucination_rate,
 )
-from grounded_memory.evaluation.normalize import normalize_relation
+from grounded_memory.evaluation.normalize import (
+    attribute_category,
+    normalize_relation,
+    spatial_opposite,
+)
 from grounded_memory.evaluation.objects import object_prf1
 from grounded_memory.evaluation.qa import normalize_answer, qa_accuracy
 from grounded_memory.evaluation.stats import bootstrap_ci, paired_bootstrap
@@ -101,6 +109,70 @@ def test_normalize_relation_maps_gqa_positional_phrases_to_canonical():
     assert normalize_relation("to the left of") == "left_of"
     assert normalize_relation("to the right of") == "right_of"
     assert normalize_relation("in front of") == "in_front_of"
+
+
+def test_attribute_category_groups_colors_and_materials():
+    assert attribute_category("red") == "color"
+    assert attribute_category("blue") == "color"
+    assert attribute_category("wood") == "material"
+    assert attribute_category("tall") is None  # size deliberately excluded
+
+
+def test_spatial_opposite_bidirectional():
+    assert spatial_opposite("left_of") == "right_of"
+    assert spatial_opposite("right_of") == "left_of"
+    assert spatial_opposite("holding") is None  # non-spatial, no configured opposite
+
+
+def _sg(objects: dict) -> dict:
+    return {"objects": objects}
+
+
+def test_verify_attribute_claim_contradicted_on_conflicting_color():
+    sg = _sg({"o1": {"name": "car", "attributes": ["blue"], "relations": []}})
+    assert verify_attribute_claim("car", "red", sg) == EvidenceLabel.CONTRADICTED
+    assert verify_attribute_claim("car", "blue", sg) == EvidenceLabel.SUPPORTED
+
+
+def test_verify_attribute_claim_not_verifiable_when_no_category_conflict():
+    sg = _sg({"o1": {"name": "car", "attributes": ["blue"], "relations": []}})
+    # "shiny" has no configured category, so it can't be judged CONTRADICTED
+    # even though it's not the annotated attribute -- absence isn't proof.
+    assert verify_attribute_claim("car", "shiny", sg) == EvidenceLabel.NOT_VERIFIABLE
+
+
+def test_verify_attribute_claim_size_words_never_contradict():
+    # "tall" and "large" are excluded from attribute_categories on purpose --
+    # an object can plausibly be both, so they must never show CONTRADICTED.
+    sg = _sg({"o1": {"name": "man", "attributes": ["tall"], "relations": []}})
+    assert verify_attribute_claim("man", "large", sg) == EvidenceLabel.NOT_VERIFIABLE
+
+
+def test_verify_attribute_claim_object_not_annotated():
+    sg = _sg({"o1": {"name": "car", "attributes": ["blue"], "relations": []}})
+    assert verify_attribute_claim("dog", "brown", sg) == EvidenceLabel.NOT_VERIFIABLE
+
+
+def test_verify_relation_claim_contradicted_on_spatial_opposite():
+    sg = _sg({
+        "o1": {"name": "cup", "attributes": [], "relations": [{"name": "left_of", "object": "o2"}]},
+        "o2": {"name": "plate", "attributes": [], "relations": []},
+    })
+    assert verify_relation_claim("cup", "right_of", "plate", sg) == EvidenceLabel.CONTRADICTED
+    assert verify_relation_claim("cup", "left_of", "plate", sg) == EvidenceLabel.SUPPORTED
+
+
+def test_verify_relation_claim_non_spatial_mismatch_stays_not_verifiable():
+    # "holding" has no configured opposite, so a wrong non-spatial claim
+    # can't be detected as CONTRADICTED -- stays the conservative default.
+    sg = _sg({
+        "o1": {
+            "name": "person", "attributes": [],
+            "relations": [{"name": "holding", "object": "o2"}],
+        },
+        "o2": {"name": "cup", "attributes": [], "relations": []},
+    })
+    assert verify_relation_claim("person", "wearing", "cup", sg) == EvidenceLabel.NOT_VERIFIABLE
 
 
 def test_bootstrap_ci_is_deterministic_and_brackets_mean():

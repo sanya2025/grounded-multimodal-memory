@@ -36,6 +36,7 @@ from grounded_memory.data.gqa import SceneGraph
 from grounded_memory.evaluation.attributes import attribute_accuracy
 from grounded_memory.evaluation.grounding import (
     EvidenceLabel,
+    verify_attribute_claim,
     verify_object_claim,
     verify_relation_claim,
 )
@@ -142,6 +143,9 @@ def score_structured_scene(
     labels: list[EvidenceLabel] = [
         verify_object_claim(e.label, scene_graph.raw) for e in scene.entities
     ]
+    for e in scene.entities:
+        for attr in e.attributes:
+            labels.append(verify_attribute_claim(e.label, attr, scene_graph.raw))
     for r in scene.relationships:
         labels.append(
             verify_relation_claim(

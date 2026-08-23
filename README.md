@@ -72,11 +72,19 @@ Setup pass (this scaffold):
 - [x] FastAPI service (`/health`, `/observe`, `/query`) + provenance-aware answers
 - [x] Experiment tracking (provenance-complete records, no-clobber JSONL)
 - [x] 14 companion notebook skeletons + runnable scripts
+- [x] Notebooks 03 & 04 upgraded to real (non-mock), both-model
+      (`qwen3_vl_8b_ollama` + `llava_ollama`) smoke tests on a handful of
+      real GQA images — see [Notebooks](#notebooks)
 - [x] CI (GitHub Actions: ruff + pytest on push/PR, Python 3.11 & 3.12)
 - [x] Download GQA and freeze the 120-image manifest v1
 - [x] Run E1 720 predictions with real VLMs *(local Ollama: qwen3-vl:8b + llava:7b)*
 - [x] Structured-condition E1 metrics computed (object/attribute/relation/
       spatial PRF1, tri-state hallucination, evidence-support, bootstrap CIs)
+- [x] Real CONTRADICTED detection (attribute color/material conflicts,
+      spatial-opposite conflicts) — `hallucination_rate` is non-zero and
+      real now, not structurally 0.0. Non-spatial relations (holding,
+      wearing, ...) still have no configured opposite, so a wrong claim
+      there still reads as `not_verifiable` rather than `contradicted`.
 - [ ] Standard/grounded-condition metrics *(no free-text extraction path yet)*
 - [ ] Build the temporal dataset and run E2 *(requires data collection)*
 - [ ] Profile E3 latency/quantization *(requires GPU)*
@@ -115,9 +123,14 @@ manifest CSV is versioned.
 # Offline smoke test with the deterministic MockVLM (no downloads):
 python scripts/run_scene_experiment.py --mock --limit 5
 
-# Real E1 run (requires .[models] + GPU + frozen manifest + GQA images):
-python scripts/run_scene_experiment.py --images-dir /path/to/gqa/images
+# Real E1 run via local Ollama models (how the actual 720-prediction run was
+# done — no GPU/HF download required; `ollama serve` + models pulled first):
+python scripts/run_scene_experiment.py --model qwen3_vl_8b_ollama --images-dir data/raw/gqa/images
+python scripts/run_scene_experiment.py --model llava_ollama --images-dir data/raw/gqa/images
 python scripts/evaluate_predictions.py
+
+# Real E1 run via Hugging Face weights instead (requires .[models] + GPU):
+python scripts/run_scene_experiment.py --images-dir /path/to/gqa/images
 
 # E2 memory/retrieval on the toy sequence (offline):
 python scripts/run_memory_experiment.py --sequences-dir data/sequences
@@ -132,6 +145,14 @@ Fourteen companion notebooks in `notebooks/` (`00_…` – `13_…`). They are t
 executable companions: reusable logic lives in `src/grounded_memory/`, notebooks
 call it, save artifacts to `results/`, use relative paths, and end with a
 Findings section. They do **not** fabricate performance numbers.
+
+`03_vlm_baseline_inference` and `04_grounded_prompting_experiment` already run
+real (non-mock) inference against both E1 models (`qwen3_vl_8b_ollama`,
+`llava_ollama`) on a handful of real GQA images — a fast sanity check of the
+pipeline and adapters, distinct from the frozen 720-prediction E1 run. Each
+writes a distinctly-named `nb03_baseline_preview__<run_id>.jsonl` /
+`nb04_bucket_preview__<run_id>.jsonl` that can never collide with the frozen
+`e1_*.jsonl` results.
 
 ## Reproducibility
 
