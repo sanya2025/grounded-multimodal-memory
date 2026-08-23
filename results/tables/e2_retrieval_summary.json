@@ -1,0 +1,22 @@
+{
+  "no_memory": {
+    "recall@5": 0.0,
+    "mrr": 0.0,
+    "n_questions": 6
+  },
+  "full_history": {
+    "recall@5": 0.8333,
+    "mrr": 0.4444,
+    "n_questions": 6
+  },
+  "semantic": {
+    "recall@5": 0.8333,
+    "mrr": 0.75,
+    "n_questions": 6
+  },
+  "hybrid": {
+    "recall@5": 0.8333,
+    "mrr": 0.75,
+    "n_questions": 6
+  }
+}

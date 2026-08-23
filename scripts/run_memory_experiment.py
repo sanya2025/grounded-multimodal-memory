@@ -18,7 +18,7 @@ from pathlib import Path
 
 from grounded_memory.config import load_config
 from grounded_memory.evaluation.retrieval import mean_recall_at_k, mrr
-from grounded_memory.memory.embeddings import HashingTextEmbedder
+from grounded_memory.memory.embeddings import Embedder, HashingTextEmbedder, OllamaEmbedder
 from grounded_memory.memory.events import MemoryEvent
 from grounded_memory.memory.store import MemoryStore
 from grounded_memory.pipelines.memory_qa import retrieve_for_question
@@ -30,7 +30,7 @@ def load_sequences(sequences_dir: Path) -> list[dict]:
     return [json.loads(f.read_text()) for f in files]
 
 
-def build_store(seq: dict, embedder: HashingTextEmbedder) -> MemoryStore:
+def build_store(seq: dict, embedder: Embedder) -> MemoryStore:
     from datetime import datetime
 
     store = MemoryStore()
@@ -55,6 +55,17 @@ def main() -> None:
     ap = argparse.ArgumentParser(description="Run E2 memory & retrieval experiment.")
     ap.add_argument("--sequences-dir", default=exp_cfg["sequences_dir"])
     ap.add_argument("--top-k", type=int, default=5)
+    ap.add_argument(
+        "--embedder", choices=["hashing", "ollama"], default="hashing",
+        help="Text embedder backend. 'hashing' (default) is deterministic and "
+        "offline, not semantic. 'ollama' uses a real local Ollama embedding "
+        "model for genuine semantic/hybrid retrieval (see --embed-model).",
+    )
+    ap.add_argument(
+        "--embed-model", default="nomic-embed-text",
+        help="Ollama embedding model name (only used with --embedder ollama). "
+        "Requires `ollama serve` + `ollama pull <model>`.",
+    )
     args = ap.parse_args()
 
     seq_dir = Path(args.sequences_dir)
@@ -63,7 +74,13 @@ def main() -> None:
         print(f"[warn] no sequence files in {seq_dir}. See notebook 08 to build them.")
         return
 
-    embedder = HashingTextEmbedder()
+    embedder: Embedder
+    if args.embedder == "ollama":
+        embedder = OllamaEmbedder(model=args.embed_model)
+        print(f"Using OllamaEmbedder(model={args.embed_model!r})")
+    else:
+        embedder = HashingTextEmbedder()
+        print("Using HashingTextEmbedder (deterministic, not semantic)")
     summary: dict[str, dict[str, float]] = {}
     for method in exp_cfg["methods"]:
         retrieved_lists, relevant_sets = [], []

@@ -44,7 +44,7 @@ e3_efficiency_production:
     - image_preprocessing
     - vision_encoding
     - memory_embedding
-    - faiss_retrieval
+    - vector_search
     - prompt_construction
     - generation
     - total
