@@ -8,6 +8,7 @@ pure/deterministic so it is unit-testable without downloading GQA.
 
 from __future__ import annotations
 
+import random
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -186,7 +187,29 @@ def next_candidate(
     return ranked[0] if ranked else None
 
 
+def stratified_sample(
+    rows: list[ManifestRow], per_bucket: int, seed: int
+) -> list[ManifestRow]:
+    """Deterministically sample ``per_bucket`` rows from each bucket.
+
+    Used to draw a smaller, still-balanced subset of the frozen manifest for
+    human evaluation (see notebook 06). Returned rows are grouped in
+    ``BUCKETS``'s canonical order; within a bucket, ``per_bucket`` is capped
+    at that bucket's pool size rather than raising.
+    """
+    rng = random.Random(seed)
+    by_bucket: dict[str, list[ManifestRow]] = {b: [] for b in BUCKETS}
+    for row in rows:
+        by_bucket.setdefault(row.primary_bucket, []).append(row)
+
+    sampled: list[ManifestRow] = []
+    for bucket in BUCKETS:
+        pool = by_bucket.get(bucket, [])
+        sampled.extend(rng.sample(pool, min(per_bucket, len(pool))))
+    return sampled
+
+
 __all__ = [
     "BUCKETS", "ManifestRow", "bucket_features", "assign_bucket", "build_candidate_manifest",
-    "rank_candidates", "next_candidate",
+    "rank_candidates", "next_candidate", "stratified_sample",
 ]
